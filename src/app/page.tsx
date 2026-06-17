@@ -45,6 +45,24 @@ export default function Home() {
       ? calculateDistanceKm(selectedLocation, selectedStation)
       : null;
 
+  React.useEffect(() => {
+    if (siteEntries.length === 0) {
+      return;
+    }
+
+    function handleBeforeUnload(event: BeforeUnloadEvent) {
+      event.preventDefault();
+      event.returnValue =
+        "You have unsaved dataset entries. Download the Excel file before leaving.";
+    }
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [siteEntries.length]);
+
   function handleAddSiteEntry(entry: SiteEntry) {
     setSiteEntries((currentEntries) => [
       ...currentEntries,
