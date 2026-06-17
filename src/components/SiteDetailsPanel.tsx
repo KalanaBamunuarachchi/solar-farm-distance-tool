@@ -54,6 +54,9 @@ export default function SiteDetailsPanel({
         ? siteEntryToFormValues(editingEntry)
         : emptySiteEntryFormValues
   );
+  const [fieldErrors, setFieldErrors] = React.useState<
+    Partial<Record<keyof SiteEntryFormValues, string>>
+  >({});
 
   const isEditing = editingEntry !== null;
   const coordinatesValue = isEditing
@@ -91,6 +94,22 @@ export default function SiteDetailsPanel({
       ...currentValues,
       [field]: value,
     }));
+    setFieldErrors((currentErrors) => ({
+      ...currentErrors,
+      [field]: undefined,
+    }));
+  }
+
+  function updateDecimalField(field: keyof SiteEntryFormValues, value: string) {
+    if (/^\d*(?:\.\d*)?$/.test(value)) {
+      updateField(field, value);
+    }
+  }
+
+  function updatePhoneField(field: keyof SiteEntryFormValues, value: string) {
+    if (/^[\d+\-\s()]*$/.test(value)) {
+      updateField(field, value);
+    }
   }
 
   function handleAccessibilityChange(value: string) {
@@ -117,6 +136,7 @@ export default function SiteDetailsPanel({
 
   function handleClearForm() {
     setFormValues(emptySiteEntryFormValues);
+    setFieldErrors({});
   }
 
   function handleCancelEdit() {
@@ -126,6 +146,17 @@ export default function SiteDetailsPanel({
 
   function handleSubmitEntry() {
     if (!canSubmitEntry) {
+      return;
+    }
+
+    const nextFieldErrors = validateTypedFields(formValues, {
+      showRoadWidth,
+      showSellPrice,
+      showLeaseValue,
+    });
+
+    if (Object.keys(nextFieldErrors).length > 0) {
+      setFieldErrors(nextFieldErrors);
       return;
     }
 
@@ -185,21 +216,37 @@ export default function SiteDetailsPanel({
             />
           </Field>
 
-          <Field label="Extent Available (in Acres)" required>
+          <Field
+            label="Extent Available (in Acres)"
+            required
+            error={fieldErrors.extentAvailableAcres}
+          >
             <Input
+              type="number"
+              min="0"
+              step="any"
+              inputMode="decimal"
               value={formValues.extentAvailableAcres}
               onChange={(event) =>
-                updateField("extentAvailableAcres", event.target.value)
+                updateDecimalField("extentAvailableAcres", event.target.value)
               }
               placeholder="Enter extent in acres"
             />
           </Field>
 
-          <Field label="Distance to 33 KVA Line (Kms)" required>
+          <Field
+            label="Distance to 33 KVA Line (Kms)"
+            required
+            error={fieldErrors.distanceTo33KvaLineKm}
+          >
             <Input
+              type="number"
+              min="0"
+              step="any"
+              inputMode="decimal"
               value={formValues.distanceTo33KvaLineKm}
               onChange={(event) =>
-                updateField("distanceTo33KvaLineKm", event.target.value)
+                updateDecimalField("distanceTo33KvaLineKm", event.target.value)
               }
               placeholder="Enter distance in km"
             />
@@ -221,11 +268,19 @@ export default function SiteDetailsPanel({
           </Field>
 
           {showRoadWidth && (
-            <Field label="Road Width (Ft)" required>
+            <Field
+              label="Road Width (Ft)"
+              required
+              error={fieldErrors.roadWidthFt}
+            >
               <Input
+                type="number"
+                min="0"
+                step="any"
+                inputMode="decimal"
                 value={formValues.roadWidthFt}
                 onChange={(event) =>
-                  updateField("roadWidthFt", event.target.value)
+                  updateDecimalField("roadWidthFt", event.target.value)
                 }
                 placeholder="Enter road width in feet"
               />
@@ -354,11 +409,19 @@ export default function SiteDetailsPanel({
           </Field>
 
           {showSellPrice && (
-            <Field label="Expected Price of a Perch (Rs)" required>
+            <Field
+              label="Expected Price of a Perch (Rs)"
+              required
+              error={fieldErrors.expectedPricePerPerchRs}
+            >
               <Input
+                type="number"
+                min="0"
+                step="any"
+                inputMode="decimal"
                 value={formValues.expectedPricePerPerchRs}
                 onChange={(event) =>
-                  updateField("expectedPricePerPerchRs", event.target.value)
+                  updateDecimalField("expectedPricePerPerchRs", event.target.value)
                 }
                 placeholder="Enter expected price in Rs."
               />
@@ -366,11 +429,19 @@ export default function SiteDetailsPanel({
           )}
 
           {showLeaseValue && (
-            <Field label="Approx. Value of Perch per Month (Rs)" required>
+            <Field
+              label="Approx. Value of Perch per Month (Rs)"
+              required
+              error={fieldErrors.leaseValuePerPerchPerMonthRs}
+            >
               <Input
+                type="number"
+                min="0"
+                step="any"
+                inputMode="decimal"
                 value={formValues.leaseValuePerPerchPerMonthRs}
                 onChange={(event) =>
-                  updateField(
+                  updateDecimalField(
                     "leaseValuePerPerchPerMonthRs",
                     event.target.value
                   )
@@ -390,11 +461,17 @@ export default function SiteDetailsPanel({
             />
           </Field>
 
-          <Field label="Contact Number" required>
+          <Field
+            label="Contact Number"
+            required
+            error={fieldErrors.contactNumber}
+          >
             <Input
+              type="tel"
+              inputMode="tel"
               value={formValues.contactNumber}
               onChange={(event) =>
-                updateField("contactNumber", event.target.value)
+                updatePhoneField("contactNumber", event.target.value)
               }
               placeholder="Enter contact number"
             />
@@ -434,11 +511,17 @@ export default function SiteDetailsPanel({
             />
           </Field>
 
-          <Field label="Inspector Contact" required>
+          <Field
+            label="Inspector Contact"
+            required
+            error={fieldErrors.inspectorContact}
+          >
             <Input
+              type="tel"
+              inputMode="tel"
               value={formValues.inspectorContact}
               onChange={(event) =>
-                updateField("inspectorContact", event.target.value)
+                updatePhoneField("inspectorContact", event.target.value)
               }
               placeholder="Enter inspector contact"
             />
@@ -478,10 +561,12 @@ export default function SiteDetailsPanel({
 function Field({
   label,
   required,
+  error,
   children,
 }: Readonly<{
   label: string;
   required?: boolean;
+  error?: string;
   children: React.ReactNode;
 }>) {
   return (
@@ -491,6 +576,82 @@ function Field({
         {required && <span className="ml-1 text-red-500">*</span>}
       </label>
       {children}
+      {error && <p className="text-xs font-medium text-red-600">{error}</p>}
     </div>
   );
+}
+
+function validateTypedFields(
+  formValues: SiteEntryFormValues,
+  visibleFields: {
+    showRoadWidth: boolean;
+    showSellPrice: boolean;
+    showLeaseValue: boolean;
+  }
+): Partial<Record<keyof SiteEntryFormValues, string>> {
+  const errors: Partial<Record<keyof SiteEntryFormValues, string>> = {};
+
+  validatePositiveDecimal(errors, formValues, "extentAvailableAcres");
+  validateNonNegativeDecimal(errors, formValues, "distanceTo33KvaLineKm");
+  validatePhone(errors, formValues, "contactNumber");
+  validatePhone(errors, formValues, "inspectorContact");
+
+  if (visibleFields.showRoadWidth) {
+    validatePositiveDecimal(errors, formValues, "roadWidthFt");
+  }
+
+  if (visibleFields.showSellPrice) {
+    validatePositiveDecimal(errors, formValues, "expectedPricePerPerchRs");
+  }
+
+  if (visibleFields.showLeaseValue) {
+    validatePositiveDecimal(errors, formValues, "leaseValuePerPerchPerMonthRs");
+  }
+
+  return errors;
+}
+
+function validatePositiveDecimal(
+  errors: Partial<Record<keyof SiteEntryFormValues, string>>,
+  formValues: SiteEntryFormValues,
+  field: keyof SiteEntryFormValues
+) {
+  const value = formValues[field].trim();
+
+  if (!isPositiveDecimal(value)) {
+    errors[field] = "Enter a positive number.";
+  }
+}
+
+function validateNonNegativeDecimal(
+  errors: Partial<Record<keyof SiteEntryFormValues, string>>,
+  formValues: SiteEntryFormValues,
+  field: keyof SiteEntryFormValues
+) {
+  const value = formValues[field].trim();
+
+  if (!isNonNegativeDecimal(value)) {
+    errors[field] = "Enter 0 or a positive number.";
+  }
+}
+
+function validatePhone(
+  errors: Partial<Record<keyof SiteEntryFormValues, string>>,
+  formValues: SiteEntryFormValues,
+  field: keyof SiteEntryFormValues
+) {
+  const value = formValues[field].trim();
+  const digitCount = value.replace(/\D/g, "").length;
+
+  if (!/^[\d+\-\s()]+$/.test(value) || digitCount < 7 || digitCount > 15) {
+    errors[field] = "Enter a valid phone number with 7-15 digits.";
+  }
+}
+
+function isPositiveDecimal(value: string): boolean {
+  return isNonNegativeDecimal(value) && Number(value) > 0;
+}
+
+function isNonNegativeDecimal(value: string): boolean {
+  return /^\d+(?:\.\d+)?$/.test(value) && Number(value) >= 0;
 }
