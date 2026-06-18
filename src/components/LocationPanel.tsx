@@ -60,6 +60,11 @@ export default function LocationPanel({
     onLocationChange(coordinates);
   }
 
+  function handleOpenPlusCodesMap(event: React.MouseEvent<HTMLAnchorElement>) {
+    event.preventDefault();
+    window.open("https://plus.codes/map", "_blank", "noopener,noreferrer");
+  }
+
   return (
     <Card className="border-l-4 border-l-green-600">
       <CardContent className="space-y-4 p-4">
@@ -194,8 +199,9 @@ export default function LocationPanel({
                       <a
                         href="https://plus.codes/map"
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                         className="font-medium text-blue-700 underline"
+                        onClick={handleOpenPlusCodesMap}
                       >
                         plus.codes/map
                       </a>{" "}
