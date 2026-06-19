@@ -62,7 +62,7 @@ export default function SiteDetailsPanel({
   const coordinatesValue = isEditing
     ? editingEntry.coordinates
     : selectedLocation
-    ? `${selectedLocation.lat.toFixed(4)}, ${selectedLocation.lng.toFixed(4)}`
+    ? `${selectedLocation.lat.toFixed(6)}, ${selectedLocation.lng.toFixed(6)}`
     : "";
   const selectedStationName = isEditing
     ? editingEntry.gridSubstation

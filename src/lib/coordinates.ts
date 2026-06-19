@@ -6,26 +6,27 @@ type ParsedDmsCoordinate = {
 };
 
 export function parseCoordinates(
-  latitudeInput: string,
-  longitudeInput: string,
-  combinedInput: string
+  input: string
 ): Coordinates | null {
-  const trimmedLatitude = latitudeInput.trim();
-  const trimmedLongitude = longitudeInput.trim();
-  const trimmedCombined = combinedInput.trim();
+  const trimmedInput = input.trim();
 
-  if (trimmedLatitude !== "" || trimmedLongitude !== "") {
-    return normalizeCoordinates(
-      parseDecimalCoordinate(trimmedLatitude),
-      parseDecimalCoordinate(trimmedLongitude)
-    );
-  }
-
-  if (trimmedCombined === "") {
+  if (trimmedInput === "") {
     return null;
   }
 
-  return parseCombinedDmsCoordinates(trimmedCombined);
+  return parseDecimalCoordinates(trimmedInput) ?? parseCombinedDmsCoordinates(trimmedInput);
+}
+
+function parseDecimalCoordinates(input: string): Coordinates | null {
+  const match = input.match(
+    /^\s*([+-]?\d+(?:\.\d+)?)\s*,\s*([+-]?\d+(?:\.\d+)?)\s*$/
+  );
+
+  if (!match) {
+    return null;
+  }
+
+  return normalizeCoordinates(Number(match[1]), Number(match[2]));
 }
 
 function parseCombinedDmsCoordinates(input: string): Coordinates | null {
@@ -43,16 +44,6 @@ function parseCombinedDmsCoordinates(input: string): Coordinates | null {
   }
 
   return normalizeCoordinates(latCandidate.value, lngCandidate.value);
-}
-
-function parseDecimalCoordinate(input: string): number | null {
-  if (!/^[+-]?\d+(?:\.\d+)?$/.test(input)) {
-    return null;
-  }
-
-  const value = Number(input);
-
-  return Number.isFinite(value) ? value : null;
 }
 
 function extractDmsCoordinates(input: string): ParsedDmsCoordinate[] {

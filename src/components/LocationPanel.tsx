@@ -24,8 +24,6 @@ export default function LocationPanel({
   selectedLocation,
   onLocationChange,
 }: Readonly<LocationPanelProps>) {
-  const [latitudeInput, setLatitudeInput] = React.useState("");
-  const [longitudeInput, setLongitudeInput] = React.useState("");
   const [coordinateInput, setCoordinateInput] = React.useState("");
   const [coordinateError, setCoordinateError] = React.useState("");
   const [plusCodeInput, setPlusCodeInput] = React.useState("");
@@ -33,14 +31,10 @@ export default function LocationPanel({
   const [showPlusCodeHelp, setShowPlusCodeHelp] = React.useState(false);
 
   function handleCoordinateSearch() {
-    const coordinates = parseCoordinates(
-      latitudeInput,
-      longitudeInput,
-      coordinateInput
-    );
+    const coordinates = parseCoordinates(coordinateInput);
 
     if (!coordinates) {
-      setCoordinateError("Enter decimal latitude/longitude or paste combined DMS.");
+      setCoordinateError("Enter decimal coordinates or combined DMS.");
       return;
     }
 
@@ -98,28 +92,15 @@ export default function LocationPanel({
           </TabsContent>
 
           <TabsContent value="latlng" className="space-y-3">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Input
-                value={latitudeInput}
-                onChange={(event) => setLatitudeInput(event.target.value)}
-                placeholder="Latitude: 6.503583"
-              />
-              <Input
-                value={longitudeInput}
-                onChange={(event) => setLongitudeInput(event.target.value)}
-                placeholder="Longitude: 80.090139"
-              />
-            </div>
-
             <Input
               value={coordinateInput}
               onChange={(event) => setCoordinateInput(event.target.value)}
-              placeholder={`Paste combined DMS: 6°30'12.9"N 80°05'24.5"E`}
+              placeholder={`6.904561, 79.867640 or 6°30'12.9"N 80°05'24.5"E`}
             />
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-xs text-muted-foreground">
-                Accept decimal degrees and combined DMS.
+                Supports decimal coordinates and combined DMS format.
               </p>
 
               <Button

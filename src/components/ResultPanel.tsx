@@ -92,7 +92,7 @@ export default function ResultPanel({
             </div>
             <span className="text-right">
               {selectedLocation
-                ? `${selectedLocation.lat.toFixed(4)}, ${selectedLocation.lng.toFixed(4)}`
+                ? `${selectedLocation.lat.toFixed(6)}, ${selectedLocation.lng.toFixed(6)}`
                 : "Not selected"}
             </span>
           </div>
